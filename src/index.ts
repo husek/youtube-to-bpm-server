@@ -6,13 +6,15 @@ import mongoose from 'mongoose';
 // Start the server
 const port = Number(process.env.PORT || 3000);
 
-mongoose.connect(`${process.env.MONGODB_URL}`, { useUnifiedTopology: true, useNewUrlParser: true });
+if (process.env.SAVE_RESULTS !== 'false') {
+  mongoose.connect(`${process.env.MONGODB_URL}`, { useUnifiedTopology: true, useNewUrlParser: true });
 
-const db = mongoose.connection;
+  const db = mongoose.connection;
 
-db.once('open', () => {
-  console.log('MongoDB database connection established successfully');
-});
+  db.once('open', () => {
+    console.log('MongoDB database connection established successfully');
+  });
+}
 
 app.listen(port, () => {
   logger.info(`Server started on port: ${port}`);

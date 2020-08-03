@@ -1,11 +1,10 @@
 import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED } from 'http-status-codes';
-import { paramMissingError } from '@shared/constants';
+import { paramMissingError, saveResults } from '@shared/constants';
 import YoutubeMp3Downloader from 'youtube-mp3-downloader';
 import { calcTempo } from '@shared/functions';
 import fs from 'fs';
 import Video from '../models/Video';
-
 
 // @ts-ignore
 import { AudioContext } from 'web-audio-api';
@@ -29,10 +28,12 @@ router.post('/', async (req: Request, res: Response) => {
     });
   }
 
-  const existingVideo = await Video.findOne({ videoId: id });
+  if (saveResults) {
+    const existingVideo = await Video.findOne({ videoId: id });
 
-  if (existingVideo) {
-    return res.status(CREATED).send(existingVideo).end();
+    if (existingVideo) {
+      return res.status(CREATED).send(existingVideo).end();
+    }
   }
 
   YD.download(id, `${id}.mp3`);
@@ -42,12 +43,16 @@ router.post('/', async (req: Request, res: Response) => {
     context.decodeAudioData(fs.readFileSync(`${__dirname}/_temp/${id}.mp3`), async (buffer: AudioBuffer) => {
       const { tempo: bpm } = calcTempo(buffer);
 
-      const newVideo = await Video.create({ bpm, videoId: id });
-      res.status(CREATED).send(newVideo).end();
-
       fs.unlink(`${__dirname}/_temp/${id}.mp3`, err => {
         if (err) console.error(err);
       });
+
+      if (saveResults) {
+        const newVideo = await Video.create({ bpm, videoId: id });
+        res.status(CREATED).send(newVideo).end();
+      } else {
+        res.status(CREATED).send({ bpm, videoId: id }).end();
+      }
 
     });
   });

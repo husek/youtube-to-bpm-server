@@ -4,13 +4,15 @@
 Node >= 12\
 Yarn\
 ffmpeg\
-MongoDB
+MongoDB (only required if you want to save the results between calls)
+
 
 #### Instructions ####
 1) Edit the .env files according to your needs
     (development.env, production.env)
 2) Dev: `yarn install && yarn start:dev`
 3) Prod `yarn install && yarn build && yarn:prod`
+
 
 #### Usage ####
 ***POST*** - /api/video\
